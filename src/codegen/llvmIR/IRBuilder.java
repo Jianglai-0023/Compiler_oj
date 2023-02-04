@@ -202,7 +202,14 @@ public class IRBuilder implements ASTVisitor {
             current_block = elseblock;
             it.stmts.get(1).accept(this);
             cur_function.addIRblock(elseblock);
+
             IRBlock endblock = new IRBlock(Integer.toString(cur_function.getRegnum()));
+
+            System.err.println("BLOCK");
+            System.err.println(((Label)endblock.label).name);
+            System.err.println(((Label)(elseblock.label)).name);
+            System.err.println(((Label)ifblock.label).name);
+
             cur_function.addIRblock(endblock);
             ori.addInst(new br(false,exp,ifblock,elseblock));
             current_block = endblock;
@@ -753,7 +760,7 @@ public class IRBuilder implements ASTVisitor {
             size = c.getAllByte();//todo check byte计算方式
             Register mallocpointer = new Register(false,new IRptr(new IRbase(IRbase.typeToken.I,8)),Integer.toString(cur_function.getRegnum()));
             ArrayList<Entity> para = new ArrayList<>();
-            para.add(new intConst(size));
+            para.add(new intConst(size + 4));
             current_block.addInst(new call("malloc",para,mallocpointer, mallocpointer.type));
 
             Register classpointer = new Register(false,new IRptr(ctype),Integer.toString(cur_function.getRegnum()));

@@ -1,47 +1,84 @@
-codegen.llvmIR.Inst.declare@511baa65
-codegen.llvmIR.Inst.declare@340f438e
-codegen.llvmIR.Inst.declare@30c7da1e
-codegen.llvmIR.Inst.declare@5b464ce8
-codegen.llvmIR.Inst.declare@57829d67
-codegen.llvmIR.Inst.declare@19dfb72a
-codegen.llvmIR.Inst.declare@17c68925
-codegen.llvmIR.Inst.declare@7e0ea639
-codegen.llvmIR.Inst.declare@3d24753a
-codegen.llvmIR.Inst.declare@59a6e353
-codegen.llvmIR.Inst.declare@7a0ac6e3
-codegen.llvmIR.Inst.declare@71be98f5
-codegen.llvmIR.Inst.declare@6fadae5d
-codegen.llvmIR.Inst.declare@17f6480
-codegen.llvmIR.Inst.declare@2d6e8792
-codegen.llvmIR.Inst.declare@2812cbfa
-codegen.llvmIR.Inst.declare@2acf57e3
-codegen.llvmIR.Inst.declare@506e6d5e
-codegen.llvmIR.Inst.declare@96532d6
+codegen.llvmIR.Inst.declare@53b32d7
+codegen.llvmIR.Inst.declare@5442a311
+codegen.llvmIR.Inst.declare@548e7350
+codegen.llvmIR.Inst.declare@1a968a59
+codegen.llvmIR.Inst.declare@4667ae56
+codegen.llvmIR.Inst.declare@77cd7a0
+codegen.llvmIR.Inst.declare@204f30ec
+codegen.llvmIR.Inst.declare@e25b2fe
+codegen.llvmIR.Inst.declare@754ba872
+codegen.llvmIR.Inst.declare@146ba0ac
+codegen.llvmIR.Inst.declare@4dfa3a9d
+codegen.llvmIR.Inst.declare@6eebc39e
+codegen.llvmIR.Inst.declare@464bee09
+codegen.llvmIR.Inst.declare@f6c48ac
+codegen.llvmIR.Inst.declare@13deb50e
+codegen.llvmIR.Inst.declare@239963d8
+codegen.llvmIR.Inst.declare@3abbfa04
+codegen.llvmIR.Inst.declare@57fffcd7
+codegen.llvmIR.Inst.declare@31ef45e3
+@p = global i32 0
+@q = global i32 0
+@r = global i32 0
+@x = global i32 0
+@y = global i32 0
+@z = global i32 0
+@n = global i32 0
+@i = global i32 0
+@str1 = constant [4 x i8] c"YES\00"
+@str2 = constant [3 x i8] c"NO\00"
 
 define void @__cxx_global_var_init() {
 }
 
 define i32 @main() {
   call void @__cxx_global_var_init()
-  %1= alloca i32
-  store i32 0, i32* %1
-  %2= alloca i32
-  store i32 0, i32* %2
-  br label %3
-%3:
-  %4 = load i32, i32* %2
-  i1 %5 = icmp slt i1 i32 %4, i32 10
-  br i1 %5, label %6, label %12
+  %1 = call i32 @getInt()
+  store i32 %1, i32 @n
+  store i32 0, i32 @i
+  br label %2
+%2:
+  %3 = load i32, i32 @i
+  %4 = load i32, i32 @n
+  i1 %5 = icmp slt i1 i32 %3, i32 %4
+  br i1 %5, label %6, label %22
 %6:
-  %7 = load i32, i32* %1
-  %8 = add i32 %7, 3
-  store i32 %8, i32* %1
-  br label %9
-%9:
-  %10 = load i32*, i32* %2
-  %11 = add i32* %10, 1
-  store i32* %11, i32* %11
-  br label %3
-%12:
+  %7 = call i32 @getInt()
+  store i32 %7, i32 @p
+  %8 = call i32 @getInt()
+  store i32 %8, i32 @q
+  %9 = call i32 @getInt()
+  store i32 %9, i32 @r
+  %10 = load i32, i32 @x
+  %11 = load i32, i32 @p
+  %12 = add i32 %10, %11
+  store i32 %12, i32 @x
+  %13 = load i32, i32 @y
+  %14 = load i32, i32 @q
+  %15 = add i32 %13, %14
+  store i32 %15, i32 @y
+  %16 = load i32, i32 @z
+  %17 = load i32, i32 @r
+  %18 = add i32 %16, %17
+  store i32 %18, i32 @z
+  br label %19
+%19:
+  %20 = load i32*, i32 @i
+  %21 = add i32* %20, 1
+  store i32* %21, i32* %21
+  br label %2
+%22:
+  %23 = load i32, i32 @x
+  i1 %24 = icmp eq i1 i32 %23, i32 0
+  br i1 %24, label %27, label %26
+%37:
+  %38 = bitcast [4 x i8]* @str1 to i8*
+  call void @print(i8* %38)
+  br label %41
+%39:
+  %40 = bitcast [3 x i8]* @str2 to i8*
+  call void @print(i8* %40)
+  br label %41
+%41:
   ret i32 0
 }

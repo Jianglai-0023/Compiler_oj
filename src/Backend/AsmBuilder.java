@@ -139,7 +139,7 @@ public class AsmBuilder implements IRPass {
 
     @Override
     public void visitClass(Class cl) {
-        cl.offset.add(0);
+        cl.offset.add(cl.vars.get(0).getBytes());
         for (int i = 1; i < cl.vars.size(); ++i)
             cl.offset.add(cl.offset.get(cl.offset.size() - 1) + cl.vars.get(i).getBytes());
     }
@@ -200,6 +200,9 @@ public class AsmBuilder implements IRPass {
     @Override
     public void visit(br it) {
         if (!it.direct) {
+            if(blockMap.get(it.label2.label) == null){
+                System.err.println(((Label)it.label2.label).name);
+            }
             Instr br = new brPseOp(brPseOp.brType.BEQZ, trans(it.con), blockMap.get(it.label2.label).label);
             blockMap.get(it.label2.label).prevInstr.put(currentBlock, br);
             currentBlock.push_back(br);
