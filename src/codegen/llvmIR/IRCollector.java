@@ -42,6 +42,13 @@ public class IRCollector implements ASTVisitor {
         c.addFunc(tp_module.array_size);
         gScope.add_IRcls(c);
 
+//        Class cint = new Class("int","class.int");
+//        gScope.add_IRcls(cint);
+//
+//        Class cbool = new Class("bool","class.bool");
+//        gScope.add_IRcls(cbool);
+
+
         c = new Class("string","class.string");
         c.addFunc(tp_module.string_subString);
         c.addFunc(tp_module.string_parseInt);

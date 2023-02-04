@@ -13,7 +13,7 @@ public class br extends Inst{
     @Override
     public String toString() {
         if(direct){
-            return "br label " + "%" + label1;
+            return "br label " + label1.label.getValue();
         }
         return "br i1 " + con.getValue() + ", label " +label1.label.getValue() + ", label " + label2.label.getValue();
     }

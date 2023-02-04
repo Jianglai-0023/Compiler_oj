@@ -2,6 +2,7 @@ package Assembly.Instr;
 
 import Assembly.Operand.Operand;
 import Assembly.Operand.Reg;
+import Assembly.Operand.phyReg;
 import Assembly.Pass;
 
 import java.util.ArrayList;
@@ -65,8 +66,9 @@ public class loadOp extends Instr {
 
     @Override
     public String toString() {
-        return "\t" + type.name().toLowerCase() + "\t" + rd + ", " +
+        String debug = "\t" + type.name().toLowerCase() + "\t" + rd + ", " +
                 (symbol != null ? symbol : imm + "(" + rs + ")");
+        return debug;
     }
 
     @Override

@@ -39,15 +39,16 @@ public class Compiler {
          PrintStream ASMOutput;
         boolean online = true;
         if(!online){
-           input_stream = new FileInputStream("/Users/jianglai/IdeaProjects/Mx-compiler2022/src/testcase/my.in");
-          charstream = CharStreams.fromStream(input_stream);
-           IROutput = new PrintStream(new FileOutputStream("/Users/jianglai/IdeaProjects/Mx-compiler2022/src/testcase/test.ll"));
-           BuiltinOutput = new PrintStream(new FileOutputStream("/Users/jianglai/IdeaProjects/Mx-compiler2022/src/testcase/builtin.s"));
-           ASMOutput = new PrintStream(new FileOutputStream("/Users/jianglai/IdeaProjects/Mx-compiler2022/src/testcase/output.s"));
+           input_stream = new FileInputStream("/Users/jianglai/IdeaProjects/Mx-compiler2022/src/test/test.mx");
+           charstream = CharStreams.fromStream(input_stream);
+           IROutput = new PrintStream(new FileOutputStream("/Users/jianglai/IdeaProjects/Mx-compiler2022/src/test/test.ll"));
+           BuiltinOutput = new PrintStream(new FileOutputStream("/Users/jianglai/IdeaProjects/Mx-compiler2022/src/test/builtin.s"));
+           ASMOutput = new PrintStream(new FileOutputStream(
+                   "/Users/jianglai/IdeaProjects/Mx-compiler2022/src/test/test.s"));
 
         }else{
            input_stream = System.in;
-          charstream = CharStreams.fromStream(input_stream);
+           charstream = CharStreams.fromStream(input_stream);
            IROutput = new PrintStream(new FileOutputStream("test.ll"));
            BuiltinOutput = new PrintStream(new FileOutputStream("builtin.s"));
            ASMOutput = new PrintStream(new FileOutputStream("output.s"));

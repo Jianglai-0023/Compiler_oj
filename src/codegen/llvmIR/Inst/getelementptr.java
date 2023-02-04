@@ -22,9 +22,9 @@ public class getelementptr extends Inst{
 
     @Override
     public String toString(){
-        String ret = rd.toString() + "= getelementptr inbounds (" + ((IRptr)rs.type).type.toString() +", " + rs.toString();
+        String ret = rd.getValue() + "= getelementptr inbounds (" + ((IRptr)rs.type).type.toString() +", " + rs.toString();
         if(is_cls) ret += ", i32 " + a.getValue() + ", i32 " + b.getValue() + ")";
-        else ret += ", i32 " + a + ")";
+        else ret += ", " + a + ")";
       return ret;
     }
 

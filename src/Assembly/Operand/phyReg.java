@@ -9,6 +9,7 @@ public class phyReg extends Reg {
 
     @Override
     public String toString(){
+        assert !name.equals("null");
         return name;
     }
 }

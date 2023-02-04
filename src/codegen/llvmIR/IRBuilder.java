@@ -66,19 +66,31 @@ public class IRBuilder implements ASTVisitor {
         if(name.equals("int")&&dim==0){
             type = new IRbase(IRbase.typeToken.I,32);
         }else if(name.equals("int")){
-            type = new IRarray(new IRbase(IRbase.typeToken.I,32),dim);
+            type = new IRbase(IRbase.typeToken.I,32);
+            for(int i = 0; i < dim; ++i){
+                type = new IRptr(type);
+            }
         }else if(name.equals("bool")&&dim==0){
             type = new IRbase(IRbase.typeToken.I,1);
         }else if(name.equals("bool")){
-            type = new IRarray(new IRbase(IRbase.typeToken.I,1),dim);
+            type = new IRbase(IRbase.typeToken.I,1);
+            for(int i = 0; i < dim; ++i){
+                type = new IRptr(type);
+            }
         }else if(name.equals("string")&&dim==0){
             type = new IRptr(new IRbase(IRbase.typeToken.I,8));
         }else if(name.equals("string")){
-            type = new IRarray(new IRptr(new IRbase(IRbase.typeToken.I,8)),dim);
+            type = new IRptr(new IRbase(IRbase.typeToken.I,8));
+            for(int i = 0; i < dim; ++i){
+                type = new IRptr(type);
+            }
         }else if(dim==0){//class
             type = new IRcls(gscope.get_IRcls_from_name(name));
         }else{
-            type = new IRarray(new IRcls(gscope.get_IRcls_from_name(name)),dim);
+            type = new IRcls(gscope.get_IRcls_from_name(name));
+            for(int i = 0; i < dim; ++i){
+                type = new IRptr(type);
+            }
         }
         return type;
     }
@@ -95,6 +107,7 @@ public class IRBuilder implements ASTVisitor {
         ArrayList<Entity> para = new ArrayList<>();
         cur_function = new Function(1,new IRbase(IRbase.typeToken.I,32),"main",para,new IRBlock("0"));
         current_block = cur_function.entry_block;
+        current_block.addInst(new call("__cxx_global_var_init",new ArrayList<>(),null,new IRbase(IRbase.typeToken.VOID)));
         gscope.add_IRfunc(cur_function);
         module.addIRfunc(cur_function);
         it.stmts.accept(this);
@@ -215,7 +228,7 @@ public class IRBuilder implements ASTVisitor {
     public void visit(ItStmtNode it) {
         ArrayList<IRBlock> loopback = Loopflow;
         Loopflow = new ArrayList<>();
-        if(it.type.equals("for")){
+        if(!it.is_while){
             if(it.ini_stmt!=null)it.ini_stmt.accept(this);
             IRBlock conb = new IRBlock(Integer.toString(cur_function.getRegnum()));
             current_block.addInst(new br(true,null,conb,null));
@@ -229,6 +242,7 @@ public class IRBuilder implements ASTVisitor {
             current_block.addInst(new br(true,null,expb,null));
             current_block = expb;
             it.exp.accept(this);
+            current_block.addInst(new br(true,null,conb,null));
             IRBlock endblock = new IRBlock(cur_function.getRegnum());
             conb.addInst(new br(false,it.con.entity,stmtb,endblock));
             current_block = endblock;
@@ -725,10 +739,16 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public void visit(NewExNode it) {
         int dim = it.dim;
-        Class c = gscope.get_IRcls_from_name(it.type_name);
-        IRType ctype = new IRcls(c);
-        ctype = new IRptr(ctype);
+//        if(!it.type_name.equals("int") && !it.type_name.equals("bool")){
+//            Class c = gscope.get_IRcls_from_name(it.type_name);
+//            IRType ctype = new IRcls(c);
+//            ctype = new IRptr(ctype);
+//        }
+
         if(dim==0){//class
+            Class c = gscope.get_IRcls_from_name(it.type_name);
+            IRType ctype = new IRcls(c);
+            ctype = new IRptr(ctype);
             int size;
             size = c.getAllByte();//todo check byte计算方式
             Register mallocpointer = new Register(false,new IRptr(new IRbase(IRbase.typeToken.I,8)),Integer.toString(cur_function.getRegnum()));
@@ -747,6 +767,13 @@ public class IRBuilder implements ASTVisitor {
                 current_block.addInst(new call(it.type_name + "." + it.type_name,paran,null,new IRbase(IRbase.typeToken.VOID)));
             }
         }else{//array
+            IRType ctype;
+            if(it.type_name.equals("int"))ctype = new IRbase(IRbase.typeToken.I,32);
+            else if(it.type_name.equals("bool"))ctype = new IRbase(IRbase.typeToken.I,1);
+            else {
+                Class c = gscope.get_IRcls_from_name(it.type_name);
+                ctype = new IRcls(c);
+            }
             if(it.exps.size()==0){
                 it.entity = new nullConst(ctype);
                 return;

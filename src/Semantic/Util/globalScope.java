@@ -59,6 +59,10 @@ public class globalScope extends Scope {
     }
 
     public Class get_IRcls_from_name(String name){
+        if (!cls_ir.containsKey(name)){
+            System.err.println(name);
+            System.err.println("nocls");
+        };
         return cls_ir.get(name);
     }
     public Function get_IRfunc_from_name(String name){

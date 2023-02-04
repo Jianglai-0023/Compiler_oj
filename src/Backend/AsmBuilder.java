@@ -47,7 +47,7 @@ public class AsmBuilder implements IRPass {
     }
 
     private Reg trans(Entity x){
-        if (x instanceof intConst||x instanceof boolConst||x instanceof nullConst){
+        if (x instanceof intConst||x instanceof boolConst||x instanceof nullConst || x instanceof Constant){
             int val;
             if(x instanceof intConst){
                 intConst c = (intConst) x;
@@ -59,20 +59,29 @@ public class AsmBuilder implements IRPass {
             }else{//null
                 val = 0;
             }
-            if(val==0){
-                return zero;
-            }
+            if(val==0)return zero;
             else {
                 Reg ret = currentFn.addVReg(4);
                 currentBlock.push_back(new li(ret, new imm(val)));
+                if(ret== null)System.err.println("1");
                 return ret;
             }
         } else if (x instanceof GlobalEntity){
             GlobalEntity g = (GlobalEntity) x;
             Reg ret = currentFn.addVReg(4);
             currentBlock.push_back(new la(ret, g.name));
+            if(ret== null)System.err.println("2");
             return ret;
-        } else return regTrans.get(x);
+        } else{
+            Reg ans =  regTrans.get(x);
+            if(ans == null){
+                if(x instanceof Register){
+                    System.err.println(((Register)x).name);
+                }
+                System.err.println("3");
+            }
+            return ans;
+        }
     }
 
     @Override
@@ -324,10 +333,10 @@ public class AsmBuilder implements IRPass {
             GlobalEntity rs = (GlobalEntity) it.tar;
             currentBlock.push_back(new loadOp(it.type.getBytes(), vrd, rs.name));
         } else {
-            Reg rs = trans(it.tar);
+            Reg rs = trans(it.res);
             if (currentFn.stackOffset.containsKey(rs)){
                 currentBlock.push_back(new mv(vrd, rs));
-            } else currentBlock.push_back(new loadOp(it.type.getBytes(), vrd, rs, new imm(0)));
+            } else currentBlock.push_back(new loadOp(it.type.getBytes(),vrd,rs,new imm(0)));
         }
         regTrans.put(it.tar, vrd);
     }

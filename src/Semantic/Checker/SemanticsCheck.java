@@ -113,8 +113,8 @@ public class SemanticsCheck implements ASTVisitor {
         }
         else{
             currentScope = new Scope(currentScope);
-            if(it.con!=null)it.con.accept(this);
             if(it.ini_stmt!=null)it.ini_stmt.accept(this);
+            if(it.con!=null)it.con.accept(this);
             if(it.exp!=null)it.exp.accept(this);
             it.stmt.accept(this);
             currentScope = currentScope.parentScope();
