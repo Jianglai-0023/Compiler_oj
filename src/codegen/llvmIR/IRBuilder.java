@@ -17,6 +17,8 @@ import codegen.llvmIR.tools.IRModule;
 import com.sun.tools.jconsole.JConsoleContext;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
+
 import codegen.llvmIR.tools.Class;
 
 public class IRBuilder implements ASTVisitor {
@@ -110,6 +112,7 @@ public class IRBuilder implements ASTVisitor {
         current_block.addInst(new call("__cxx_global_var_init",new ArrayList<>(),null,new IRbase(IRbase.typeToken.VOID)));
         Register ret = new Register(false,new IRptr(new IRbase(IRbase.typeToken.I,32)),Integer.toString(cur_function.getRegnum()));
         current_block.addInst(new alloca(new IRptr(new IRbase(IRbase.typeToken.I,32)),ret));
+        current_block.addInst(new store(ret,new intConst(0)));
         cur_function.retEntity = ret;
         gscope.add_IRfunc(cur_function);
         module.addIRfunc(cur_function);
@@ -117,7 +120,9 @@ public class IRBuilder implements ASTVisitor {
         IRBlock endBlock = new IRBlock(cur_function.getRegnum());
         current_block.addInst(new br(true,null,endBlock,null));
         current_block = endBlock;
-        current_block.addInst(new ret(cur_function.retEntity));
+        Register finalret = new Register(false,((IRptr)cur_function.retEntity.type).type,Integer.toString(cur_function.getRegnum()));
+        current_block.addInst(new load(finalret,cur_function.retEntity,finalret.type));
+        current_block.addInst(new ret(finalret));
         cur_function.addIRblock(endBlock);
         cur_function = null;
         //todo
@@ -335,7 +340,9 @@ public class IRBuilder implements ASTVisitor {
             IRBlock endblock = new IRBlock(cur_function.getRegnum());
             current_block.addInst(new br(true,null,endblock,null));
             current_block = endblock;
-            current_block.addInst(new ret(cur_function.retEntity));
+            Register finret = new Register(false,((IRptr)cur_function.ret_type).type,Integer.toString(cur_function.getRegnum()));
+            current_block.addInst(new load(finret,cur_function.retEntity,finret.type));
+            current_block.addInst(new ret(finret));
             cur_function.addIRblock(endblock);
 //        }
         cur_function = null;
@@ -743,9 +750,17 @@ public class IRBuilder implements ASTVisitor {
             current_block.addInst(new call(gscope.get_IRfunc_from_name(it.idn).identifier,parameters,rd,gscope.get_IRfunc_from_name(it.idn).ret_type));
         }else {//(it.exp instanceof MemExNode) 对应的是IRptr的type
             ((MemExNode)it.exp).target.accept(this);
-            Class c = ((IRcls)((IRptr)(((MemExNode)it.exp).target.entity.type)).type).cl;
-            rd = new Register(false,c.findFunc(c.identifier + "." + it.idn).ret_type,Integer.toString(cur_function.getRegnum()));
-            current_block.addInst(new call(c.name + "." + it.idn,parameters,rd,c.findFunc(c.identifier + "." +it.idn).ret_type));
+            Class c;
+            if(it.idn.equals("size")){
+                c = gscope.get_IRcls_from_name("___array");
+            }
+            else c = ((IRcls)((IRptr)(((MemExNode)it.exp).target.entity.type)).type).cl;
+            if(it.idn.equals("size")){
+                rd = new Register(false,c.findFunc("array_size").ret_type,Integer.toString(cur_function.getRegnum()));
+            }else rd = new Register(false,c.findFunc(c.identifier + "." + it.idn).ret_type,Integer.toString(cur_function.getRegnum()));
+
+           if(!it.idn.equals("size")) current_block.addInst(new call(c.name + "." + it.idn,parameters,rd,c.findFunc(c.identifier + "." +it.idn).ret_type));
+           else current_block.addInst(new call(c.name + "." + it.idn,parameters,rd,c.findFunc("array_size").ret_type));
         }
 //        it.exp.accept(this);
 
@@ -966,7 +981,19 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public void visit(ArrExNode it) {
         it.target.accept(this);
-
+        Entity arreg;
+        arreg = new Register(false,((IRptr)it.target.entity.type).type,Integer.toString(cur_function.getRegnum()));
+        current_block.addInst(new load(arreg,it.target.entity,arreg.type));
+        it.idx.accept(this);
+        Entity offet;
+        if(it.idx.entity.is_lval){
+            offet = new Register(false,((IRptr)it.idx.entity.type).type,Integer.toString(cur_function.getRegnum()));
+            current_block.addInst(new load(offet,it.idx.entity, offet.type));
+        }else offet = it.idx.entity;
+        Entity rd = new Register(true, arreg.type,Integer.toString(cur_function.getRegnum()));
+//        if(it.idx.entity instanceof Register)((Register)it.idx.entity).
+        current_block.addInst(new getelementptr(rd,arreg,offet,null,false));
+        it.entity = rd;
     }
 
     @Override
