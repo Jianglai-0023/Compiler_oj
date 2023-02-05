@@ -87,7 +87,7 @@ public class Scope {
     public Entity find_entity_byname(String name){
         if(regs.containsKey(name))return regs.get(name);
         else if(parentScope!=null)return parentScope.find_entity_byname(name);
-        else throw new semanticError("[IR]no reg entity find",new position(0,0));
+        else throw new semanticError("[IR]no reg entity find " + name,new position(0,0));
     }
 
 }

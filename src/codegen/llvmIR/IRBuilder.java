@@ -138,6 +138,11 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public void visit(VarDefNode it) {
         it.entity = current_Scope.find_entity_byname(it.idn);
+        if(it.entity instanceof Label){
+            Register ret = new Register(true,new IRptr(cur_cls.getIRType(it.idn)),Integer.toString(cur_function.getRegnum()));
+            current_block.addInst(new getelementptr(ret,cur_function.parameters.get(0),cur_cls.getindex(it.idn),0,true));
+            it.entity = ret;
+        }
 
     }
 
@@ -168,9 +173,11 @@ public class IRBuilder implements ASTVisitor {
                 cur_function = null;
                 //todo 初始化函数放到 global init 中
             }
-            else if(cur_cls!=null){//class's entity
+            else if(cur_cls!=null && cur_function == null){//class's entity
                 cur_cls.add_Cls_vartype(type,it.var_exp.get(i).a.idn);
-                //todo 初始化函数处理initial
+                Entity reg = new Label("0");
+                current_Scope.add_reg(it.var_exp.get(i).a.idn,reg);
+
             }
             else{//function
                 Entity en = new Register(true,type,Integer.toString(cur_function.getRegnum()));
@@ -313,6 +320,7 @@ public class IRBuilder implements ASTVisitor {
         cur_cls = gscope.get_IRcls_from_name(it.idn);
         current_Scope = new Scope(current_Scope);
         current_Scope.is_cls = new ClsType(gscope.getClsTypeFromName(it.idn,it.pos));
+        it.decs.forEach(x->x.accept(this));
         if(it.constructs.size()!=0)it.constructs.get(0).accept(this);
         it.funs.forEach(x->x.accept(this));
         current_Scope = current_Scope.parentScope();
@@ -334,7 +342,7 @@ public class IRBuilder implements ASTVisitor {
         for(int i = 0; i < it.para.size(); ++i){
             if(cur_cls==null)current_Scope.add_reg(it.para.get(i).idn,cur_function.parameters.get(i));
             else current_Scope.add_reg(it.para.get(i).idn,cur_function.parameters.get(i+1));
-        }//function is not the
+        }//function is not thedecs
         it.stmt.accept(this);
 //        if(current_block.isBranched) {
             IRBlock endblock = new IRBlock(cur_function.getRegnum());

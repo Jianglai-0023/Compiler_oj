@@ -1,34 +1,32 @@
 /*
 Test Package: Codegen
-Author: 14' Shichao Xu
-Time: 2020-01-25
+Author: 15' Haoran Ye
+Time: 2020-02-03
 Input:
 === input ===
 === end ===
 Output:
 === output ===
-1024
+eternal!
 === end ===
 ExitCode: 0
 InstLimit: -1
-Origin Package: Codegen Pretest-533
+Origin Package: Codegen Pretest-876
 */
-int qpow(int a,int p,int mod) {
-    int t = 1;
-    int y = a;
-    while(p>0){
-        if((p&1) == 1)t=t*y % mod;
-        y=y*y % mod;
-        p=p / 2;
-    }
-    return t;
+class older{
+	int age;
+	void solveAge(){
+		int i;
+		int j;
+		int k;
+		for(i = 1; i < 100; i++)
+			for(j = i + 1; j < 100; j++)
+				for(k = j + 1; k < 100; k++)
+					if((i - i + i + j - j + j + k - k + k) * (100 * i + 10 * j + k) % 1926 == 0) age = (i - i + i + j - j + j + k - k + k) * (100 * i + 10 * j + k);
+	}
+};
+int main(){
+	older mrJiang = new older;
+
 }
 
-
-
-
-
-int main() {
-    println(toString(qpow(2,10,10000)));
-    return 0;
-}
