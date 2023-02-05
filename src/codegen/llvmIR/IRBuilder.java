@@ -340,7 +340,7 @@ public class IRBuilder implements ASTVisitor {
             IRBlock endblock = new IRBlock(cur_function.getRegnum());
             current_block.addInst(new br(true,null,endblock,null));
             current_block = endblock;
-            Register finret = new Register(false,((IRptr)cur_function.ret_type).type,Integer.toString(cur_function.getRegnum()));
+            Register finret = new Register(false,cur_function.ret_type,Integer.toString(cur_function.getRegnum()));
             current_block.addInst(new load(finret,cur_function.retEntity,finret.type));
             current_block.addInst(new ret(finret));
             cur_function.addIRblock(endblock);
