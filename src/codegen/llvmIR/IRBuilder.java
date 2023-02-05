@@ -384,6 +384,9 @@ public class IRBuilder implements ASTVisitor {
                 longblock.addInst(new store(endEntity,entity2));
                 longblock.addInst(new br(true,null,endblock,null));
                 current_block = endblock;
+                cur_function.addIRblock(shortblock);
+                cur_function.addIRblock(longblock);
+                cur_function.addIRblock(endblock);
                 it.entity = endEntity;
             }else{
                 it.lson.accept(this);
@@ -409,6 +412,9 @@ public class IRBuilder implements ASTVisitor {
                 longblock.addInst(new store(endEntity,entity2));
                 longblock.addInst(new br(true,null,endblock,null));
                 current_block = endblock;
+                cur_function.addIRblock(shortblock);
+                cur_function.addIRblock(longblock);
+                cur_function.addIRblock(endblock);
                 it.entity = endEntity;
             }
 
@@ -629,9 +635,9 @@ public class IRBuilder implements ASTVisitor {
             case R_PLUSPLUS -> {
                 Entity afterentity = new Register(false,it.exp.entity.type,Integer.toString(cur_function.getRegnum()));
                 current_block.addInst(new binaryOp(binaryOp.binaryOpType.ADD,beforeentity,new intConst(1),afterentity,it.exp.entity.type));
-                it.exp.entity = afterentity;
                 it.entity = beforeentity;
                 current_block.addInst(new store(it.exp.entity,afterentity));
+                it.exp.entity = afterentity;
             }
             case L_MINUSMINUS -> {
                 Entity afterentity = new Register(false,it.exp.entity.type,Integer.toString(cur_function.getRegnum()));
@@ -643,9 +649,9 @@ public class IRBuilder implements ASTVisitor {
             case R_MINUSMINUS -> {
                 Entity afterentity = new Register(false,it.exp.entity.type,Integer.toString(cur_function.getRegnum()));
                 current_block.addInst(new binaryOp(binaryOp.binaryOpType.ADD,beforeentity,new intConst(-1),afterentity,it.exp.entity.type));
-                it.exp.entity = afterentity;
                 it.entity = beforeentity;
                 current_block.addInst(new store(it.exp.entity,afterentity));
+                it.exp.entity = afterentity;
             }
             case PLUS -> {
                 it.entity = beforeentity;

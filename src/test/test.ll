@@ -65,12 +65,32 @@ define i32 @main() {
 %19:
   %20 = load i32*, i32 @i
   %21 = add i32* %20, 1
-  store i32* %21, i32* %21
+  store i32* %21, i32 @i
   br label %2
 %22:
   %23 = load i32, i32 @x
   i1 %24 = icmp eq i1 i32 %23, i32 0
   br i1 %24, label %27, label %26
+%26:
+  store i1 %24, i1 %25
+  br label %30
+%27:
+  %28 = load i32, i32 @y
+  i1 %29 = icmp eq i1 i32 %28, i32 0
+  store i1 %29, i1 %25
+  br label %30
+%30:
+  br i1 %25, label %33, label %32
+%32:
+  store i1 %25, i1 %31
+  br label %36
+%33:
+  %34 = load i32, i32 @z
+  i1 %35 = icmp eq i1 i32 %34, i32 0
+  store i1 %35, i1 %31
+  br label %36
+%36:
+  br i1 %31, label %37, label %39
 %37:
   %38 = bitcast [4 x i8]* @str1 to i8*
   call void @print(i8* %38)

@@ -74,12 +74,12 @@ public class AsmBuilder implements IRPass {
             return ret;
         } else{
             Reg ans =  regTrans.get(x);
-            if(ans == null){
-                if(x instanceof Register){
-                    System.err.println(((Register)x).name);
-                }
-                System.err.println("3");
-            }
+//            if(ans == null){
+//                if(x instanceof Register){
+//                    System.err.println(((Register)x).name);
+//                }
+//                System.err.println("3");
+//            }
             return ans;
         }
     }
