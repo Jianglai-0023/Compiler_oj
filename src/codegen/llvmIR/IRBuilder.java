@@ -140,6 +140,9 @@ public class IRBuilder implements ASTVisitor {
         it.entity = current_Scope.find_entity_byname(it.idn);
         if(it.entity instanceof Label){
             Register ret = new Register(true,new IRptr(cur_cls.getIRType(it.idn)),Integer.toString(cur_function.getRegnum()));
+            if (!(cur_function.parameters.get(0).type instanceof IRptr)){
+                System.err.println("1");
+            };
             current_block.addInst(new getelementptr(ret,cur_function.parameters.get(0),cur_cls.getindex(it.idn),0,true));
             it.entity = ret;
         }
@@ -348,9 +351,17 @@ public class IRBuilder implements ASTVisitor {
             IRBlock endblock = new IRBlock(cur_function.getRegnum());
             current_block.addInst(new br(true,null,endblock,null));
             current_block = endblock;
-            Register finret = new Register(false,cur_function.ret_type,Integer.toString(cur_function.getRegnum()));
-            current_block.addInst(new load(finret,cur_function.retEntity,finret.type));
-            current_block.addInst(new ret(finret));
+            Register finret;
+            if(!(cur_function.ret_type instanceof IRbase) || ((IRbase)cur_function.ret_type).type_name!= IRbase.typeToken.VOID ){
+                finret = new Register(false,cur_function.ret_type,Integer.toString(cur_function.getRegnum()));
+                current_block.addInst(new load(finret,cur_function.retEntity,finret.type));
+                current_block.addInst(new ret(finret));
+            }
+            else{
+                finret = null;
+                current_block.addInst(new ret(finret));
+            }
+
             cur_function.addIRblock(endblock);
 //        }
         cur_function = null;
@@ -752,10 +763,20 @@ public class IRBuilder implements ASTVisitor {
         });
         Entity rd;
         if(it.exp instanceof VarDefNode){
-            if(gscope.get_IRfunc_from_name(it.idn).ret_type instanceof IRbase && ((IRbase) gscope.get_IRfunc_from_name(it.idn).ret_type).type_name==IRbase.typeToken.VOID ){
+            String funname;
+            System.err.println(it.idn);
+            if(cur_cls!=null){
+                String s = cur_cls.identifier+"."+it.idn;
+                Function f = gscope.get_IRfunc_from_name(s);
+                if(f!=null){
+                    funname = s;
+                }else funname = it.idn;
+            }else funname = it.idn;
+
+            if(gscope.get_IRfunc_from_name(funname).ret_type instanceof IRbase && ((IRbase) gscope.get_IRfunc_from_name(funname).ret_type).type_name==IRbase.typeToken.VOID ){
                 rd = null;
-            }else rd = new Register(false,gscope.get_IRfunc_from_name(it.idn).ret_type,Integer.toString(cur_function.getRegnum()));
-            current_block.addInst(new call(gscope.get_IRfunc_from_name(it.idn).identifier,parameters,rd,gscope.get_IRfunc_from_name(it.idn).ret_type));
+            }else rd = new Register(false,gscope.get_IRfunc_from_name(funname).ret_type,Integer.toString(cur_function.getRegnum()));
+            current_block.addInst(new call(gscope.get_IRfunc_from_name(funname).identifier,parameters,rd,gscope.get_IRfunc_from_name(funname).ret_type));
         }else {//(it.exp instanceof MemExNode) 对应的是IRptr的type
             ((MemExNode)it.exp).target.accept(this);
             Class c;
@@ -778,14 +799,28 @@ public class IRBuilder implements ASTVisitor {
 
     }
 
+    public Entity loadPtr(Entity ent){
+        Register reg = new Register(false,((IRptr)ent.type).type,Integer.toString(cur_function.getRegnum()));
+        current_block.addInst(new load(reg,ent,reg.type));
+        return reg;
+    }
+
     @Override
     public void visit(MemExNode it) {//member only
         it.target.accept(this);
         Entity c = it.target.entity;
-        Class cls = ((IRcls)((IRptr)it.target.entity.type).type).cl;
+        System.err.println(it.member);
+        Entity tar;
+        if(it.target.entity.is_lval){
+            tar = loadPtr(it.target.entity);
+        }else tar = it.target.entity;
+        Class cls = ((IRcls)((IRptr)tar.type).type).cl;
         int idx = cls.getindex(it.member);
         IRType membertype = cls.getIRType(it.member);
         Register rd = new Register(false,new IRptr(membertype),Integer.toString(cur_function.getRegnum()));
+        if (!(it.target.entity.type instanceof IRptr)){
+            System.err.println("1");
+        };
         current_block.addInst( new getelementptr(rd,it.target.entity,0,idx,true));
         it.entity = rd;
     }
@@ -862,6 +897,9 @@ public class IRBuilder implements ASTVisitor {
             Register moveReg = new Register(false,sizepointerIRType, Integer.toString(cur_function.getRegnum()));
             nowparaList = new ArrayList<>();
             nowparaList.add(new intConst(1));
+            if (!(sizepointerReg.type instanceof IRptr)){
+                System.err.println("4");
+            };
             current_block.addInst(new getelementptr(moveReg, sizepointerReg, 1, 0,false));
             //bitcast to cls
             IRType trueIRType = ctype;
@@ -951,6 +989,9 @@ public class IRBuilder implements ASTVisitor {
                     moveReg = new Register(false,sizepointerIRType, Integer.toString(cur_function.getRegnum()));
                     nowparaList = new ArrayList<>();
                     nowparaList.add(new intConst(1));
+                    if (!(sizepointerReg.type instanceof IRptr)) {
+                        System.err.println("8");
+                    };
                     current_block.addInst(new getelementptr(moveReg,sizepointerReg,1,0,false));
 
                     //bitcase to the trueIRType
@@ -963,6 +1004,9 @@ public class IRBuilder implements ASTVisitor {
                     addrReg = new Register(false,preReg.type, Integer.toString(cur_function.getRegnum()));
                     nowparaList = new ArrayList<>();
                     nowparaList.add(curReg);
+                    if(!(preReg.type instanceof IRptr)){
+                        System.err.println("5");
+                    };
                     current_block.addInst(new getelementptr(addrReg,preReg, curReg, null,false));
                     current_block.addInst(new store(finalReg, addrReg));
                     IRBlock incrBlock = new IRBlock(cur_function.getRegnum());
@@ -990,8 +1034,10 @@ public class IRBuilder implements ASTVisitor {
     public void visit(ArrExNode it) {
         it.target.accept(this);
         Entity arreg;
-        arreg = new Register(false,((IRptr)it.target.entity.type).type,Integer.toString(cur_function.getRegnum()));
-        current_block.addInst(new load(arreg,it.target.entity,arreg.type));
+        if(it.target.entity.is_lval){
+            arreg = new Register(false,((IRptr)it.target.entity.type).type,Integer.toString(cur_function.getRegnum()));
+            current_block.addInst(new load(arreg,it.target.entity,arreg.type));
+        }else arreg = it.target.entity;
         it.idx.accept(this);
         Entity offet;
         if(it.idx.entity.is_lval){
@@ -1000,6 +1046,9 @@ public class IRBuilder implements ASTVisitor {
         }else offet = it.idx.entity;
         Entity rd = new Register(true, arreg.type,Integer.toString(cur_function.getRegnum()));
 //        if(it.idx.entity instanceof Register)((Register)it.idx.entity).
+        if(!(arreg.type instanceof IRptr)){
+            System.err.println("6");
+        }
         current_block.addInst(new getelementptr(rd,arreg,offet,null,false));
         it.entity = rd;
     }
@@ -1013,9 +1062,11 @@ public class IRBuilder implements ASTVisitor {
     public void visit(JpStmtNode it) {
         //todo void?
         if(it.is_return){//如果往curretnblock中加语句的时候is_branch为true则不可以继续加语句了
-            it.exp.accept(this);
-            current_block.addInst(new store(cur_function.retEntity,it.exp.entity));
-            current_block.isBranched = true;
+            if(it.exp!=null){
+                it.exp.accept(this);
+                current_block.addInst(new store(cur_function.retEntity,it.exp.entity));
+                current_block.isBranched = true;
+            }
         }
         else if(it.is_break){
             current_block.isBranched = true;

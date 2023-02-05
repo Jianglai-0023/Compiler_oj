@@ -26,7 +26,8 @@ public abstract class ExprNode extends ASTNode {
     }
 
     public boolean isString(){
-        return entity.type instanceof IRptr && ((IRbase)((IRptr)entity.type).type).bits==8;
+
+        return entity.type instanceof IRptr &&((IRptr)entity.type).type instanceof IRbase && ((IRbase)(((IRptr)entity.type).type)).bits==8;
     }
 
 }

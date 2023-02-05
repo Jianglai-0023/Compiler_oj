@@ -14,7 +14,7 @@ public class ret extends Inst {
 
     @Override
     public String toString(){
-        return "ret " + ret_type;
+        return "ret " + ((ret_type==null)?"":ret_type);
     }
 
 

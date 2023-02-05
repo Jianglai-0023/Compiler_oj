@@ -92,14 +92,14 @@ public class IRCollector implements ASTVisitor {
             return switch (c.type) {
                 case "int" -> new IRbase(IRbase.typeToken.I, 32);
                 case "bool" -> new IRbase(IRbase.typeToken.I, 8);
-                default -> new IRcls(gScope.get_IRcls_from_name(c.idn));
+                default -> new IRcls(gScope.get_IRcls_from_name(c.type));
             };
         }else{
             assert(!c.type.equals("void"));
             IRType t = switch (c.type) {
                 case "int" -> new IRbase(IRbase.typeToken.I, 32);
                 case "bool", "string" -> new IRbase(IRbase.typeToken.I, 8);
-                default -> new IRcls(gScope.get_IRcls_from_name(c.idn));
+                default -> new IRcls(gScope.get_IRcls_from_name(c.type));
             };
             if(c.type.equals("string"))t = new IRptr(t);
             for(int i = 0; i < c.dim; ++i){
@@ -166,11 +166,11 @@ public class IRCollector implements ASTVisitor {
         Function f = new Function(reg_num + 1,typeTranslate(it.fun_type.return_type),it.idn,para,new IRBlock(Integer.toString(reg_num)));
         f.identifier = (cur_cls!=null ? cur_cls.identifier+ ".":"")  + it.idn;
 //        f.entry_block.parameters = f.parameters;
-        if(cur_cls==null){
+
             gScope.add_IRfunc(f);
             tp_module.addIRfunc(f);
-        }
-        else cur_cls.addFunc(f);
+
+        if(cur_cls!=null ) cur_cls.addFunc(f);
     }
 
     @Override
