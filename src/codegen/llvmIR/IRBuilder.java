@@ -108,9 +108,17 @@ public class IRBuilder implements ASTVisitor {
         cur_function = new Function(1,new IRbase(IRbase.typeToken.I,32),"main",para,new IRBlock("0"));
         current_block = cur_function.entry_block;
         current_block.addInst(new call("__cxx_global_var_init",new ArrayList<>(),null,new IRbase(IRbase.typeToken.VOID)));
+        Register ret = new Register(false,new IRptr(new IRbase(IRbase.typeToken.I,32)),Integer.toString(cur_function.getRegnum()));
+        current_block.addInst(new alloca(new IRptr(new IRbase(IRbase.typeToken.I,32)),ret));
+        cur_function.retEntity = ret;
         gscope.add_IRfunc(cur_function);
         module.addIRfunc(cur_function);
         it.stmts.accept(this);
+        IRBlock endBlock = new IRBlock(cur_function.getRegnum());
+        current_block.addInst(new br(true,null,endBlock,null));
+        current_block = endBlock;
+        current_block.addInst(new ret(cur_function.retEntity));
+        cur_function.addIRblock(endBlock);
         cur_function = null;
         //todo
     }
@@ -312,14 +320,24 @@ public class IRBuilder implements ASTVisitor {
         else cur_function = cur_cls.findFunc(cur_cls.identifier + "."+it.idn);
         current_block = cur_function.entry_block;
         current_Scope = new Scope(current_Scope);
+        if(!(cur_function.ret_type instanceof IRbase) || ((IRbase)cur_function.ret_type).type_name != IRbase.typeToken.VOID){
+            Register reg = new Register(false,new IRptr(cur_function.ret_type),Integer.toString(cur_function.getRegnum()));
+            current_block.addInst(new alloca(reg.type,reg));
+            cur_function.retEntity = reg;
+        }
+
         for(int i = 0; i < it.para.size(); ++i){
             if(cur_cls==null)current_Scope.add_reg(it.para.get(i).idn,cur_function.parameters.get(i));
             else current_Scope.add_reg(it.para.get(i).idn,cur_function.parameters.get(i+1));
         }//function is not the
         it.stmt.accept(this);
-        if(current_block.isBranched) {
-
-        }
+//        if(current_block.isBranched) {
+            IRBlock endblock = new IRBlock(cur_function.getRegnum());
+            current_block.addInst(new br(true,null,endblock,null));
+            current_block = endblock;
+            current_block.addInst(new ret(cur_function.retEntity));
+            cur_function.addIRblock(endblock);
+//        }
         cur_function = null;
         current_Scope = current_Scope.parentScope();
     }
@@ -961,7 +979,7 @@ public class IRBuilder implements ASTVisitor {
         //todo void?
         if(it.is_return){//如果往curretnblock中加语句的时候is_branch为true则不可以继续加语句了
             it.exp.accept(this);
-            current_block.addInst(new ret(it.exp.entity));
+            current_block.addInst(new store(cur_function.retEntity,it.exp.entity));
             current_block.isBranched = true;
         }
         else if(it.is_break){

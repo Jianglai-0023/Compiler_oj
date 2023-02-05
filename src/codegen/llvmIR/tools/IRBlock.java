@@ -28,14 +28,17 @@ public class IRBlock {
         isBranched = false;
     }
     public void addInst(Inst t){
-        instructions.add(t);
-        if(t instanceof br || t instanceof ret){
-            terminate = t;
+        if(!isBranched){
+            instructions.add(t);
+            if(t instanceof br || t instanceof ret){
+                terminate = t;
+            }
+            else if(t instanceof alloca){
+                Allocalist.add(t);
+            }
+            else Instlist.add(t);
         }
-        else if(t instanceof alloca){
-            Allocalist.add(t);
-        }
-        else Instlist.add(t);
+
     }
 
     public void accept(IRvisitor visitor) {

@@ -10,6 +10,7 @@ public class Function {
 
     public String identifier;
     public IRType ret_type;
+    public Entity retEntity;
     public ArrayList<IRBlock> blocks = new ArrayList<>();
     public ArrayList<Entity> parameters = new ArrayList<>();
     public IRBlock entry_block,exit_block;
